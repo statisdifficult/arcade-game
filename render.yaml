@@ -1,0 +1,10 @@
+# Render 원클릭 배포 설정 — https://render.com/deploy?repo=<이 저장소 URL> 로 접속하면
+# 이 파일을 읽어서 서버가 자동으로 세팅된다 (무료 플랜)
+services:
+  - type: web
+    name: tenten-arcade-server
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node index.js

@@ -1,14 +1,19 @@
 // 맞짱 오락실 릴레이 서버 — 방 코드 기반, 의존성은 ws 하나뿐인 단일 파일
 // 기본은 순수 릴레이: {t:'msg', d} → 같은 방 전원에게 {t:'msg', from, d}
 // 동시 획득 충돌이 나는 게임(점 먹기 eat / 페인트 paint)만 서버가 판정한다.
+const http = require('http');
 const { WebSocketServer } = require('ws');
 
 const PORT = process.env.PORT || 8790;
 const MAX_PLAYERS = 6;
 
-const wss = new WebSocketServer({ port: PORT }, () =>
-  console.log(`🕹️  맞짱 오락실 서버 실행 중 — 포트 ${PORT}`)
-);
+// 일반 HTTP 요청에는 200으로 응답 — 클라우드(Render 등) 헬스체크/절전 깨우기용
+const httpServer = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+  res.end('🕹️ 맞짱 오락실 릴레이 서버 작동 중 — 앱의 서버 주소에 wss://이주소 를 넣으세요');
+});
+const wss = new WebSocketServer({ server: httpServer });
+httpServer.listen(PORT, () => console.log(`🕹️  맞짱 오락실 서버 실행 중 — 포트 ${PORT}`));
 
 let nextId = 1;
 const rooms = new Map(); // code → room

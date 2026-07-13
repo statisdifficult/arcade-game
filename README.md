@@ -89,8 +89,16 @@ npm start        # 포트 8790
 
 `server/`는 의존성이 `ws` 하나뿐인 단일 파일 Node 서버라 아무 데나 배포하면 됩니다.
 
-1. [Render](https://render.com), Railway, Fly.io 등에 `server/` 폴더를 배포 (start command: `node index.js`, `PORT` 환경변수 자동 인식)
-2. 앱 로비 하단 "서버 주소"에 배포 주소 입력: `wss://내앱이름.onrender.com`
+**Render 원클릭 배포** (무료, 저장소에 `render.yaml` 포함):
+
+1. `https://render.com/deploy?repo=<이 저장소 URL>` 접속 → GitHub 로그인 → Deploy
+2. 완료되면 `https://tenten-arcade-server-xxxx.onrender.com` 주소가 나옴
+3. 앱 로비 하단 "서버 주소"에 `wss://` 로 바꿔 입력: `wss://tenten-arcade-server-xxxx.onrender.com`
+4. 방 만들면 QR에 이 주소가 같이 담기므로, 친구들은 QR만 찍으면 끝
+
+Railway, Fly.io 등도 가능 (start command: `node index.js`, `PORT` 환경변수 자동 인식).
+
+> 💡 무료 플랜은 15분간 아무도 없으면 잠들어요. 첫 접속이 30초~1분 걸리면 깨어나는 중이니 한 번 더 시도하면 됩니다. 브라우저로 서버 주소(https://)를 열어 "작동 중" 메시지가 보이면 깨어난 것.
 
 ---
 
