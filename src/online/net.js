@@ -29,10 +29,12 @@ export class Net {
     this.ws = null;
     this.handlers = new Set();
     this.connected = false;
+    this.url = null; // 마지막으로 붙은 서버 주소 — 다른 주소로 갈아탈 때 재접속 판단용
   }
 
   connect(url) {
     this.close();
+    this.url = url;
     return new Promise((resolve, reject) => {
       let settled = false;
       let ws;

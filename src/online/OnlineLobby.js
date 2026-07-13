@@ -6,6 +6,7 @@ import {
 import { C } from '../theme';
 import { Screen, BigButton, Chip } from '../components/ui';
 import { Net, guessServerUrl } from './net';
+import { QRCode, QRScanner, makeJoinPayload } from './qr';
 
 import TapRace from './TapRace';
 import DotsArena from './DotsArena';
@@ -43,7 +44,7 @@ const ONLINE_GAMES = [
 
 export default function OnlineLobby({ onExit }) {
   const net = useRef(new Net()).current;
-  const [phase, setPhase] = useState('menu'); // menu | room | game
+  const [phase, setPhase] = useState('menu'); // menu | scan | room | game
   const [name, setName] = useState(() => `용사${Math.floor(10 + Math.random() * 90)}`);
   const [server, setServer] = useState(guessServerUrl());
   const [codeInput, setCodeInput] = useState('');
@@ -90,17 +91,27 @@ export default function OnlineLobby({ onExit }) {
     };
   }, []);
 
-  const go = async (action) => {
+  const go = async (action, srvOverride, codeOverride) => {
+    const srv = (srvOverride ?? server).trim();
+    const code = (codeOverride ?? codeInput).trim();
     setErr('');
     setBusy(true);
     try {
-      if (!net.connected) await net.connect(server.trim());
+      if (!net.connected || net.url !== srv) await net.connect(srv);
       if (action === 'create') net.send({ t: 'create', name: name.trim() || '플레이어' });
-      else net.send({ t: 'join', code: codeInput.trim(), name: name.trim() || '플레이어' });
+      else net.send({ t: 'join', code, name: name.trim() || '플레이어' });
     } catch (e) {
       setErr(e.message);
     }
     setBusy(false);
+  };
+
+  // QR 스캔 성공 → 서버 주소/코드 자동 입력 + 바로 참가
+  const joinFromQR = (p) => {
+    setServer(p.server);
+    setCodeInput(p.code);
+    setPhase('menu');
+    go('join', p.server, p.code);
   };
 
   // ─── 게임 화면 ───
@@ -121,6 +132,15 @@ export default function OnlineLobby({ onExit }) {
     }
   }
 
+  // ─── QR 스캔 화면 ───
+  if (phase === 'scan') {
+    return (
+      <Screen>
+        <QRScanner onScan={joinFromQR} onClose={() => setPhase('menu')} />
+      </Screen>
+    );
+  }
+
   // ─── 방(대기실) 화면 ───
   if (phase === 'room' && room) {
     const isHost = room.hostId === me;
@@ -134,7 +154,10 @@ export default function OnlineLobby({ onExit }) {
           </View>
           <Text style={st.codeLabel}>방 코드</Text>
           <Text style={st.code}>{room.code}</Text>
-          <Text style={st.sub}>친구들이 이 코드로 참가하면 돼요 (최대 6명)</Text>
+          <View style={st.qrWrap}>
+            <QRCode value={makeJoinPayload(net.url || server.trim(), room.code)} size={170} />
+            <Text style={st.qrHint}>📷 친구 폰에서 "QR로 참가"로 이걸 찍으면 바로 입장!{'\n'}코드 {room.code}를 직접 입력해도 돼요 (최대 6명)</Text>
+          </View>
 
           <View style={st.playerBox}>
             {room.players.map((p) => (
@@ -192,6 +215,7 @@ export default function OnlineLobby({ onExit }) {
           <BigButton label={busy ? '연결 중...' : '방 만들기 👑'} onPress={() => go('create')} disabled={busy} color={C.gold} style={{ marginTop: 16 }} />
 
           <Text style={[st.label, { marginTop: 22 }]}>친구 방에 참가</Text>
+          <BigButton label="📷 QR로 참가" onPress={() => setPhase('scan')} disabled={busy} color={C.green} style={{ marginBottom: 10 }} />
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TextInput
               style={[st.input, { flex: 1, letterSpacing: 6, textAlign: 'center', fontSize: 20 }]}
@@ -237,6 +261,8 @@ const st = StyleSheet.create({
   err: { color: C.danger, marginTop: 16, fontWeight: '700', textAlign: 'center' },
   codeLabel: { color: C.sub, fontSize: 13, textAlign: 'center', marginTop: 6 },
   code: { color: C.gold, fontSize: 56, fontWeight: '900', textAlign: 'center', letterSpacing: 10 },
+  qrWrap: { alignItems: 'center', marginTop: 6 },
+  qrHint: { color: C.sub, fontSize: 12, textAlign: 'center', marginTop: 10, lineHeight: 18 },
   playerBox: {
     flexDirection: 'row',
     flexWrap: 'wrap',
