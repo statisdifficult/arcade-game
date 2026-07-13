@@ -17,6 +17,14 @@
     },
     "web": {
       "bundler": "metro"
-    }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "QR 코드를 찍어 친구 방에 참가하려면 카메라 권한이 필요해요."
+        }
+      ]
+    ]
   }
 }

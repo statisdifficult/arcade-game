@@ -126,7 +126,8 @@ tenten-arcade/
 ## 🛠 기술 스택
 
 - **앱**: Expo SDK 57 / React Native 0.86 / React 19 — 외부 게임엔진 없이 RN 애니메이션·타이머로 구현
-- **서버**: Node.js + `ws` (단일 파일, ~150줄)
+- **QR 참가**: `qrcode-generator`(순수 JS)로 QR 생성 + `expo-camera`로 스캔
+- **서버**: Node.js + `ws` (단일 파일, ~150줄) — `cd server && npm test`로 프로토콜 자동 검증
 - 그래픽 에셋 없음 (이모지 기반) — 클론 후 바로 실행 가능
 
 ## 📱 팁

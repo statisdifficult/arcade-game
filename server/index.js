@@ -63,7 +63,6 @@ wss.on('connection', (ws) => {
         if (room) leave(ws);
         const r = { code: makeCode(), players: new Map(), hostId: ws.playerId, taken: new Set(), paint: new Map() };
         rooms.set(r.code, r);
-        r.hostId = ws.playerId;
         joinRoom(r, ws, m.name);
         break;
       }
